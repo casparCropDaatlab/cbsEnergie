@@ -1,12 +1,13 @@
-## Import dependency packages
 import dash
 from dash import dcc
 from dash import html
 import dash_bootstrap_components as dbc
 from dash import Input, Output, State, callback
+
 import plotly
 import plotly_express as px
 import plotly.graph_objects as go
+
 import pandas
 import cbsodata
 
@@ -24,23 +25,26 @@ totalEnergyCategories = [
     'Kernenergie'
 ]
 
+# print(list(dfCbsEnergy.columns.values()))
+# print(list(dfCbsEnergy['Energiedragers'].unique()))
+
 ##Set the layout for Page 2
 layout = html.Div([
     dbc.Row([
         dbc.Col([
-            html.H3("Energieaanbod in TPES over het jaar", className="text-center text-white"),
+            html.H3("Energie verbruik over het jaar", className="text-center text-white"),
             dcc.Dropdown(
-                id='energei-aanbod-jaar',
+                id='energei-verbruik-jaar',
                 options= list(dfCbsEnergy['Perioden'].unique()),
                 value='2020',
                 className="mb-4 mt-2"
             ) ,
-            dcc.Graph(id='energie-aanbod-per-drager'),
+            dcc.Graph(id='energie-verbruik-per-drager'),
         ], xs=12, sm=12,md=12,lg=5,xl=5,xxl=5, className="offset-1 mb-2 mt-2"),
         dbc.Col([
-            html.H3("Detailoverzicht energie aanbod over het jaar", className="text-center text-white"),
+            html.H3("Detailoverzicht energie verbruik over het jaar", className="text-center text-white"),
             dcc.Dropdown(
-                id='energie-verdieping-opties',
+                id='energie-verbruik-verdieping-opties',
                 options = [
                     'Totaal kool en koolproducten',
                     'Totaal aardoliegrondstoffen',
@@ -50,42 +54,42 @@ layout = html.Div([
                 value='Hernieuwbare energie',
                 className="mb-4 mt-2"
             ),
-            dcc.Graph(id='energie-aanbod-verdieping',className="mb-3")
+            dcc.Graph(id='energie-verbruik-verdieping',className="mb-3")
         ], xs=12, sm=12,md=12,lg=5,xl=5,xxl=5, className="mb-2 mt-2"),
     ], className="mt-4 mb-2 bg-secondary"),
 ])
 
 ##Callbacks
 @callback(
-    Output('energie-aanbod-per-drager', 'figure'),
-    Input('energei-aanbod-jaar', 'value')
+    Output('energie-verbruik-per-drager', 'figure'),
+    Input('energei-verbruik-jaar', 'value')
 )
 def update_graph(selected_year):
-    ## Prepare DataFrame for the total energy sources of year graph
-    energySourcesTotalDfSelect = dfCbsEnergy[
+    ## Prepare DataFrame for the total energy use of year graph
+    energyUseTotalDfSelect = dfCbsEnergy[
         dfCbsEnergy['Energiedragers'].isin(totalEnergyCategories)
     ]
-    energySourcesTotalDfSelect = energySourcesTotalDfSelect[
-        energySourcesTotalDfSelect['Perioden']==str(selected_year)
+    energyUseTotalDfSelect = energyUseTotalDfSelect[
+        energyUseTotalDfSelect['Perioden']==str(selected_year)
     ]
-    energySourcesTotaldf = energySourcesTotalDfSelect.groupby(['Energiedragers']).sum()
-    energySourcesTotaldf = energySourcesTotaldf.sort_values(
-        by=['TotaalAanbodTPES_1'], ascending=True
+    energyUseTotaldf = energyUseTotalDfSelect.groupby(['Energiedragers']).sum()
+    energyUseTotaldf = energyUseTotaldf.sort_values(
+        by=['TotaalEnergieverbruik_9'], ascending=True
     )
-    ## Build the total energy sources of year graph
+    ## Build the total energy use of year graph
     fig = px.bar(
-        y=energySourcesTotaldf.index,
-        x=energySourcesTotaldf.TotaalAanbodTPES_1,
-        labels={"x": "Totaalaanbod (TPES)", "y":"Energiedragers"},
+        y=energyUseTotaldf.index,
+        x=energyUseTotaldf.TotaalEnergieverbruik_9,
+        labels={"x": "Totaalverbruik", "y":"Energiedragers"},
         height=650
     )
     fig.update_traces(marker_color='darkgreen')
     return fig
 
 @callback(
-    Output('energie-aanbod-verdieping', 'figure'),
-    Input('energie-verdieping-opties', 'value'),
-    Input('energei-aanbod-jaar', 'value')
+    Output('energie-verbruik-verdieping', 'figure'),
+    Input('energie-verbruik-verdieping-opties', 'value'),
+    Input('energei-verbruik-jaar', 'value')
 )
 def update_graph(selected_energy_source, selected_year):
     if selected_energy_source == 'Totaal kool en koolproducten':
@@ -140,22 +144,22 @@ def update_graph(selected_energy_source, selected_year):
     else :
         energySelection = []
 
-    ## Prepare DataFrame for the Detail energy sources of year graph
-    energySourcesDetailDfSelect = dfCbsEnergy[
+    ## Prepare DataFrame for the Detail energy use of year graph
+    energyUseDetailDfSelect = dfCbsEnergy[
         dfCbsEnergy['Energiedragers'].isin(energySelection)
     ]
-    energySourcesDetailDfSelect = energySourcesDetailDfSelect[
-        energySourcesDetailDfSelect['Perioden']==str(selected_year) 
+    energyUseDetailDfSelect = energyUseDetailDfSelect[
+        energyUseDetailDfSelect['Perioden']==str(selected_year) 
     ]
-    energySourcesDetailDf = energySourcesDetailDfSelect.groupby(['Energiedragers']).sum()
-    energySourcesDetailDf = energySourcesDetailDf.sort_values(
-        by=['TotaalAanbodTPES_1'], ascending=True
+    energyUseDetailDf = energyUseDetailDfSelect.groupby(['Energiedragers']).sum()
+    energyUseDetailDf = energyUseDetailDf.sort_values(
+        by=['TotaalEnergieverbruik_9'], ascending=True
     )
-    ## Build the detail energy sources of year graph
+    ## Build the detail energy use of year graph
     fig = px.bar(
-        y=energySourcesDetailDf.index,
-        x=energySourcesDetailDf.TotaalAanbodTPES_1,
-        labels={"x": "Totaalaanbod (TPES)", "y":"Energiedragers"},
+        y=energyUseDetailDf.index,
+        x=energyUseDetailDf.TotaalEnergieverbruik_9,
+        labels={"x": "Totaalverbruik", "y":"Energiedragers"},
         height=650
     )
     fig.update_traces(marker_color='darkgreen')

@@ -1,22 +1,20 @@
-from turtle import width
+## Import dependency packages
 import dash
 from dash import dcc
 from dash import html
 import dash_bootstrap_components as dbc
 from dash import Input, Output, State, callback
-
 import plotly
 import plotly_express as px
 import plotly.graph_objects as go
-
 import pandas
 import cbsodata
 
-from pages import page1, page2
+## Import all the pages
+from pages import page1, page2, page3, page4, page5
 
 ## Get the CBS energy data
 dfCbsEnergy = pandas.DataFrame(cbsodata.get_data('83140NED'))
-
 # print(list(dfCbsEnergy.columns.values()))
 # print(list(dfCbsEnergy['Energiedragers'].unique()))
 
@@ -51,8 +49,11 @@ app.layout = html.Div([
                     ),
                     dbc.DropdownMenu(
                         children=[
-                            dbc.DropdownMenuItem("Totaal verbruik tijdlijn", href="/page3", className="text-white"),
+                            dbc.DropdownMenuItem("Totaal verbruik tijdlijn", href="/page3", className="text-black"),
                             dbc.DropdownMenuItem("Totaal verbruik per jaar", href="/page4", className="text-black"),
+                            dbc.DropdownMenuItem("Energieomzetting per jaar", href="/page5", className="text-black pl-2"),
+                            dbc.DropdownMenuItem("Eigen verbruik per jaar", href="/page6", className="text-black pl-2"),
+                            dbc.DropdownMenuItem("Finaal verbruik per jaar", href="/page7", className="text-black pl-2"),
                         ],
                         nav=True,
                         in_navbar=True,
@@ -83,6 +84,12 @@ def display_page(pathname):
         return page1.layout
     elif pathname == '/page2':
         return page2.layout
+    elif pathname == '/page3':
+        return page3.layout
+    elif pathname == '/page4':
+        return page4.layout
+    elif pathname == '/page5':
+        return page5.layout
     else:
         return '404'
 
