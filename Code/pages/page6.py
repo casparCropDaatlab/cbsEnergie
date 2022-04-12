@@ -3,7 +3,7 @@ import dash
 from dash import dcc
 from dash import html
 import dash_bootstrap_components as dbc
-from dash import Input, Output, callback
+from dash import Input, Output, State, callback
 import plotly
 import plotly_express as px
 import plotly.graph_objects as go
@@ -12,29 +12,35 @@ import sys
 sys.path.insert(0, '/cbsEnergie/Code/pages/')
 from energyAppGlobalData import dfCbsEnergy, totalEnergyCategories
 
-## Energieomzetting layout
+## Eigen verbruik layout
 layout = html.Div([
     dbc.Row(
         [
             dbc.Col(
                 [
-                    html.H3("Energieomzetting over het jaar", className="text-center text-white"),
+                    html.H3(
+                        "Eigen verbruik over het jaar",
+                        className="text-center text-white"
+                    ),
                     dcc.Dropdown(
-                        id='energei-omzet-jaar',
+                        id='energie-eigen-gebruik-jaar',
                         options= list(dfCbsEnergy['Perioden'].unique()),
                         value='2020',
                         className="mb-4 mt-2"
                     ) ,
-                    dcc.Graph(id='energie-omzet-per-drager'),
+                    dcc.Graph(id='eigen-energie-verbruik-per-drager'),
                 ], 
                 xs=10, sm=10,md=10,lg=10,xl=10,xxl=10,
                 className="offset-1 mb-2 mt-2"
             ),
             dbc.Col(
                 [
-                    html.H3("Detailoverzicht energie omzet over het jaar", className="text-center text-white"),
+                    html.H3(
+                        "Detailoverzicht eigen verbruik over het jaar",
+                        className="text-center text-white"
+                    ),
                     dcc.Dropdown(
-                        id='energie-omzet-verdieping-opties',
+                        id='energie-eigen-verbruik-verdieping-opties',
                         options = [
                             'Totaal kool en koolproducten',
                             'Totaal aardoliegrondstoffen',
@@ -44,51 +50,78 @@ layout = html.Div([
                         value='Hernieuwbare energie',
                         className="mb-4 mt-2"
                     ),
-                    dcc.Graph(id='energie-omzet-verdieping',className="mb-3")
+                    dcc.Graph(id='energie-eigen-verbruik-verdieping',className="mb-3")
                 ], 
                 xs=10, sm=10,md=10,lg=10,xl=10,xxl=10,
                 className="offset-1 mb-5 mt-2"
             ),
-        ],
-        className="mt-4 mb-2 bg-secondary"
+        ], className="mt-4 mb-2 bg-secondary"
     ),
 ])
 
-##Callbacks
+## Callbacks for the graphs
 @callback(
-    Output('energie-omzet-per-drager', 'figure'),
-    Input('energei-omzet-jaar', 'value')
+    Output("eigen-energie-verbruik-per-drager", 'figure'),
+    Input("energie-eigen-gebruik-jaar", 'value')
 )
 def update_graph(selected_year):
-    ## Prepare DataFrame for the total energy conversion of year graph
-    energyConversionTotalSelection = dfCbsEnergy[
+    ## Get the dataframe for own usage 'Totaal_19'
+    energyUsageSelection = dfCbsEnergy[
         dfCbsEnergy['Energiedragers'].isin(totalEnergyCategories)
     ]
-    energyConversionTotalSelection = energyConversionTotalSelection[
-        energyConversionTotalSelection['Perioden']==str(selected_year)
+    energyUsageSelection = energyUsageSelection[
+        energyUsageSelection['Perioden']==str(selected_year) 
     ]
-    energyConversionTotalDf = energyConversionTotalSelection.groupby(['Energiedragers']).sum()
-    energyConversionTotalDf = energyConversionTotalDf.sort_values(
-        by=['TotaalSaldoEnergieomzetting_16'], ascending=True
+    energyUsageDf = energyUsageSelection.groupby(['Energiedragers']).sum()
+    energyUsageDf = energyUsageDf.sort_values(
+        by=['Totaal_19'], ascending=True
     )
-    ## Build the total energy conversion of year graph
-    fig = go.Figure(data=[
+
+    fig = go.Figure()
+
+    fig.add_trace(
         go.Bar(
-            name="Totaal inzet",
-            x=energyConversionTotalDf.index,
-            y=energyConversionTotalDf['TotaalInzet_10']
+            name="Elektriciteit en warmteproductie",
+            x=energyUsageDf.index,
+            y=energyUsageDf['ElektriciteitsEnWarmteproductie_20']
         ),
+    )
+    fig.add_trace(
         go.Bar(
-            name="Totaal productie",
-            x=energyConversionTotalDf.index,
-            y=energyConversionTotalDf['TotaalProductie_13']
+            name="Winning van olie & gas",
+            x=energyUsageDf.index,
+            y=energyUsageDf['WinningVanOlieEnGas_21']
         ),
+    )
+    fig.add_trace(
         go.Bar(
-            name="Totaal saldo energieomzetting",
-            x=energyConversionTotalDf.index,
-            y=energyConversionTotalDf['TotaalSaldoEnergieomzetting_16']
+            name="Cokesfabrieken_22",
+            x=energyUsageDf.index,
+            y=energyUsageDf['Cokesfabrieken_22']
         ),
-    ])
+    )    
+    fig.add_trace(
+        go.Bar(
+            name="Hoogovens",
+            x=energyUsageDf.index,
+            y=energyUsageDf['Hoogovens_23']
+        ),
+    )
+    fig.add_trace(
+        go.Bar(
+            name="Olieraffinage installaties",
+            x=energyUsageDf.index,
+            y=energyUsageDf['OlieraffinageInstallaties_24']
+        ),
+    )
+    fig.add_trace(
+        go.Bar(
+            name="Overige installaties",
+            x=energyUsageDf.index,
+            y=energyUsageDf['OverigeInstallaties_25']
+        ),
+    )
+
     fig.update_layout(
         barmode='group',
         height=600,
@@ -104,9 +137,9 @@ def update_graph(selected_year):
     return fig
 
 @callback(
-    Output('energie-omzet-verdieping', 'figure'),
-    Input('energie-omzet-verdieping-opties', 'value'),
-    Input('energei-omzet-jaar', 'value')
+    Output('energie-eigen-verbruik-verdieping', 'figure'),
+    Input('energie-eigen-verbruik-verdieping-opties', 'value'),
+    Input('energie-eigen-gebruik-jaar', 'value')
 )
 def update_graph(selected_energy_source, selected_year):
     if selected_energy_source == 'Totaal kool en koolproducten':
@@ -164,35 +197,63 @@ def update_graph(selected_energy_source, selected_year):
     else :
         energySelection = []
 
-    ## Prepare DataFrame for the Detail energy conversion of year graph
-    energyConversionSelection = dfCbsEnergy[
+    ## Prepare DataFrame for the Detail own usage energy of year graph
+    energyUsageSelection = dfCbsEnergy[
         dfCbsEnergy['Energiedragers'].isin(energySelection)
     ]
-    energyConversionSelection = energyConversionSelection[
-        energyConversionSelection['Perioden']==str(selected_year) 
+    energyUsageSelection = energyUsageSelection[
+        energyUsageSelection['Perioden']==str(selected_year) 
     ]
-    energyConversionDf = energyConversionSelection.groupby(['Energiedragers']).sum()
-    energyConversionDf = energyConversionDf.sort_values(
-        by=['TotaalSaldoEnergieomzetting_16'], ascending=True
-    )
+    energyUsageDf = energyUsageSelection.groupby(['Energiedragers']).sum()
+    # energyUsageDf = energyUsageDf.sort_values(
+    #     by=[str(selected_energy_source)], ascending=True
+    # )
     ## Build the detail energy sources of year graph
-    fig = go.Figure(data=[
+    
+    fig = go.Figure()
+
+    fig.add_trace(
         go.Bar(
-            name="Totaal inzet",
-            x=energyConversionDf.index,
-            y=energyConversionDf['TotaalInzet_10']
+            name="Elektriciteit en warmteproductie",
+            x=energyUsageDf.index,
+            y=energyUsageDf['ElektriciteitsEnWarmteproductie_20']
         ),
+    )
+    fig.add_trace(
         go.Bar(
-            name="Totaal productie",
-            x=energyConversionDf.index,
-            y=energyConversionDf['TotaalProductie_13']
+            name="Winning van olie & gas",
+            x=energyUsageDf.index,
+            y=energyUsageDf['WinningVanOlieEnGas_21']
         ),
+    )
+    fig.add_trace(
         go.Bar(
-            name="Totaal saldo energieomzetting",
-            x=energyConversionDf.index,
-            y=energyConversionDf['TotaalSaldoEnergieomzetting_16']
+            name="Cokesfabrieken",
+            x=energyUsageDf.index,
+            y=energyUsageDf['Cokesfabrieken_22']
         ),
-    ])
+    )    
+    fig.add_trace(
+        go.Bar(
+            name="Hoogovens",
+            x=energyUsageDf.index,
+            y=energyUsageDf['Hoogovens_23']
+        ),
+    )
+    fig.add_trace(
+        go.Bar(
+            name="Olieraffinage installaties",
+            x=energyUsageDf.index,
+            y=energyUsageDf['OlieraffinageInstallaties_24']
+        ),
+    )
+    fig.add_trace(
+        go.Bar(
+            name="Overige installaties",
+            x=energyUsageDf.index,
+            y=energyUsageDf['OverigeInstallaties_25']
+        ),
+    )
     fig.update_layout(
         barmode='group',
         height=600,

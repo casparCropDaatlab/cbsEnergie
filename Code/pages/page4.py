@@ -2,31 +2,14 @@ import dash
 from dash import dcc
 from dash import html
 import dash_bootstrap_components as dbc
-from dash import Input, Output, State, callback
-
+from dash import Input, Output, callback
 import plotly
 import plotly_express as px
 import plotly.graph_objects as go
 
-import pandas
-import cbsodata
-
-## Get the CBS energy data
-dfCbsEnergy = pandas.DataFrame(cbsodata.get_data('83140NED'))
-
-##Set categories for totals
-totalEnergyCategories = [
-    'Totaal kool en koolproducten',
-    'Totaal aardoliegrondstoffen en producten',
-    'Aardgas',
-    'Hernieuwbare energie',
-    'Elektriciteit',
-    'Warmte',
-    'Kernenergie'
-]
-
-# print(list(dfCbsEnergy.columns.values()))
-# print(list(dfCbsEnergy['Energiedragers'].unique()))
+import sys
+sys.path.insert(0, '/cbsEnergie/Code/pages/')
+from energyAppGlobalData import dfCbsEnergy, totalEnergyCategories
 
 ##Set the layout for Page 2
 layout = html.Div([
@@ -100,7 +83,10 @@ def update_graph(selected_energy_source, selected_year):
             'Bruinkool',
             'Cokesovencokes',
             'Bruinkoolbriketten',
-            'Steenkoolteer'
+            'Steenkoolteer',
+            'Gasfabriekgas',
+            'Cokesovengas',
+            'Hoogovengas'
         ]
     elif selected_energy_source == 'Totaal aardoliegrondstoffen':
         energySelection = [

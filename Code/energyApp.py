@@ -7,16 +7,11 @@ from dash import Input, Output, State, callback
 import plotly
 import plotly_express as px
 import plotly.graph_objects as go
-import pandas
-import cbsodata
+# import pandas
+# import cbsodata
 
 ## Import all the pages
-from pages import page1, page2, page3, page4, page5
-
-## Get the CBS energy data
-dfCbsEnergy = pandas.DataFrame(cbsodata.get_data('83140NED'))
-# print(list(dfCbsEnergy.columns.values()))
-# print(list(dfCbsEnergy['Energiedragers'].unique()))
+from pages import page1, page2, page3, page4, page5, page6, page7
 
 ## Dash app
 app = dash.Dash(
@@ -90,6 +85,10 @@ def display_page(pathname):
         return page4.layout
     elif pathname == '/page5':
         return page5.layout
+    elif pathname == '/page6':
+        return page6.layout
+    elif pathname == '/page7':
+        return page7.layout
     else:
         return '404'
 

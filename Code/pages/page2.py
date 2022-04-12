@@ -3,26 +3,14 @@ import dash
 from dash import dcc
 from dash import html
 import dash_bootstrap_components as dbc
-from dash import Input, Output, State, callback
+from dash import Input, Output, callback
 import plotly
 import plotly_express as px
 import plotly.graph_objects as go
-import pandas
-import cbsodata
 
-## Get the CBS energy data
-dfCbsEnergy = pandas.DataFrame(cbsodata.get_data('83140NED'))
-
-##Set categories for totals
-totalEnergyCategories = [
-    'Totaal kool en koolproducten',
-    'Totaal aardoliegrondstoffen en producten',
-    'Aardgas',
-    'Hernieuwbare energie',
-    'Elektriciteit',
-    'Warmte',
-    'Kernenergie'
-]
+import sys
+sys.path.insert(0, '/cbsEnergie/Code/pages/')
+from energyAppGlobalData import dfCbsEnergy, totalEnergyCategories
 
 ##Set the layout for Page 2
 layout = html.Div([
@@ -30,7 +18,7 @@ layout = html.Div([
         dbc.Col([
             html.H3("Energieaanbod in TPES over het jaar", className="text-center text-white"),
             dcc.Dropdown(
-                id='energei-aanbod-jaar',
+                id='energie-aanbod-jaar',
                 options= list(dfCbsEnergy['Perioden'].unique()),
                 value='2020',
                 className="mb-4 mt-2"
@@ -58,7 +46,7 @@ layout = html.Div([
 ##Callbacks
 @callback(
     Output('energie-aanbod-per-drager', 'figure'),
-    Input('energei-aanbod-jaar', 'value')
+    Input('energie-aanbod-jaar', 'value')
 )
 def update_graph(selected_year):
     ## Prepare DataFrame for the total energy sources of year graph
@@ -85,7 +73,7 @@ def update_graph(selected_year):
 @callback(
     Output('energie-aanbod-verdieping', 'figure'),
     Input('energie-verdieping-opties', 'value'),
-    Input('energei-aanbod-jaar', 'value')
+    Input('energie-aanbod-jaar', 'value')
 )
 def update_graph(selected_energy_source, selected_year):
     if selected_energy_source == 'Totaal kool en koolproducten':
@@ -96,7 +84,10 @@ def update_graph(selected_energy_source, selected_year):
             'Bruinkool',
             'Cokesovencokes',
             'Bruinkoolbriketten',
-            'Steenkoolteer'
+            'Steenkoolteer',
+            'Gasfabriekgas',
+            'Cokesovengas',
+            'Hoogovengas'
         ]
     elif selected_energy_source == 'Totaal aardoliegrondstoffen':
         energySelection = [

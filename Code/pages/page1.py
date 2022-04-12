@@ -6,22 +6,10 @@ import dash_bootstrap_components as dbc
 import plotly
 import plotly_express as px
 import plotly.graph_objects as go
-import pandas
-import cbsodata
 
-## Get the CBS energy data
-dfCbsEnergy = pandas.DataFrame(cbsodata.get_data('83140NED'))
-
-##Set categories for totals
-totalEnergyCategories = [
-    'Totaal kool en koolproducten',
-    'Totaal aardoliegrondstoffen en producten',
-    'Aardgas',
-    'Hernieuwbare energie',
-    'Elektriciteit',
-    'Warmte',
-    'Kernenergie'
-]
+import sys
+sys.path.insert(0, '/cbsEnergie/Code/pages/')
+from energyAppGlobalData import dfCbsEnergy, totalEnergyCategories
 
 ## Prepare DataFrame for and build the graph of total energy sources over years
 energySourcesTotalOverTimeDF = dfCbsEnergy[dfCbsEnergy['Energiedragers'].isin(totalEnergyCategories)]
@@ -32,7 +20,8 @@ energySourcesTotalOverTimeFigure = px.line(
     labels={"y": "Totaalaanbod (TPES)", "x":"Jaren", "color":"Energiedragers"},
     color_discrete_map={
         "Totaal kool en koolproducten": "brown",
-        "Totaal aardoliegrondstoffen en producten": "black",
+        "Totaal aardoliegrondstoffen": "black",
+        "Totaal aardolieproducten": "purple",
         "Aardgas": "blue",
         "Hernieuwbare energie": "green",
         "Elektriciteit": "magenta",
@@ -41,6 +30,15 @@ energySourcesTotalOverTimeFigure = px.line(
     },
     height=600,
     markers=True
+)
+energySourcesTotalOverTimeFigure.update_layout(
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=1.02,
+        xanchor="right",
+        x=1
+    )
 )
 
 ## Set the layout for page 1
