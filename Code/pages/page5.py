@@ -1,10 +1,8 @@
 ## Import dependency packages
-import dash
 from dash import dcc
 from dash import html
 import dash_bootstrap_components as dbc
 from dash import Input, Output, callback
-import plotly
 import plotly_express as px
 import plotly.graph_objects as go
 
@@ -54,154 +52,106 @@ layout = html.Div([
     ),
 ])
 
-##Callbacks
+##Callback for "Energie omzetting" totals for the year
 @callback(
     Output('energie-omzet-per-drager', 'figure'),
     Input('energei-omzet-jaar', 'value')
 )
 def update_graph(selected_year):
     ## Prepare DataFrame for the total energy conversion of year graph
-    energyConversionTotalSelection = dfCbsEnergy[
-        dfCbsEnergy['Energiedragers'].isin(totalEnergyCategories)
-    ]
-    energyConversionTotalSelection = energyConversionTotalSelection[
-        energyConversionTotalSelection['Perioden']==str(selected_year)
-    ]
-    energyConversionTotalDf = energyConversionTotalSelection.groupby(['Energiedragers']).sum()
-    energyConversionTotalDf = energyConversionTotalDf.sort_values(
-        by=['TotaalSaldoEnergieomzetting_16'], ascending=True
-    )
+    energyConvTselect = dfCbsEnergy[dfCbsEnergy['Energiedragers'].isin(totalEnergyCategories)]
+    energyConvTselect = energyConvTselect[energyConvTselect['Perioden']==str(selected_year)]
+    energyConvTdf = energyConvTselect.groupby(['Energiedragers']).sum()
+    energyConvTdf = energyConvTdf.sort_values(by=['TotaalSaldoEnergieomzetting_16'], ascending=True)
+
     ## Build the total energy conversion of year graph
     fig = go.Figure(data=[
-        go.Bar(
-            name="Totaal inzet",
-            x=energyConversionTotalDf.index,
-            y=energyConversionTotalDf['TotaalInzet_10']
+        go.Bar(name="Totaal inzet",
+            x=energyConvTdf.index, y=energyConvTdf['TotaalInzet_10']
         ),
-        go.Bar(
-            name="Totaal productie",
-            x=energyConversionTotalDf.index,
-            y=energyConversionTotalDf['TotaalProductie_13']
+        go.Bar(name="Totaal productie",
+            x=energyConvTdf.index, y=energyConvTdf['TotaalProductie_13']
         ),
-        go.Bar(
-            name="Totaal saldo energieomzetting",
-            x=energyConversionTotalDf.index,
-            y=energyConversionTotalDf['TotaalSaldoEnergieomzetting_16']
+        go.Bar(name="Totaal saldo energieomzetting",
+            x=energyConvTdf.index, y=energyConvTdf['TotaalSaldoEnergieomzetting_16']
         ),
     ])
+
+    ## Update graph layout for correct visualisation
     fig.update_layout(
-        barmode='group',
-        height=600,
+        xaxis_title="Energiedragers",
+        yaxis_title="Omzetting in PJ",
+        barmode='group', height=600,
         legend=dict(
             orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
+            yanchor="bottom", y=1.02,
+            xanchor="right", x=1
         )
     )
 
     return fig
 
+## Callback for the "Energie omzet" detailed graph
 @callback(
     Output('energie-omzet-verdieping', 'figure'),
     Input('energie-omzet-verdieping-opties', 'value'),
     Input('energei-omzet-jaar', 'value')
 )
 def update_graph(selected_energy_source, selected_year):
+    ## Set the list of energy carriers based on the selected source
     if selected_energy_source == 'Totaal kool en koolproducten':
         energySelection = [
-            'Antraciet',
-            'Cokeskool',
-            'Ketelkolen',
-            'Bruinkool',
-            'Cokesovencokes',
-            'Bruinkoolbriketten',
-            'Steenkoolteer',
-            'Gasfabriekgas',
-            'Cokesovengas',
-            'Hoogovengas'
+            'Antraciet', 'Cokeskool', 'Ketelkolen', 'Bruinkool', 'Cokesovencokes', 'Bruinkoolbriketten',
+            'Steenkoolteer', 'Gasfabriekgas', 'Cokesovengas', 'Hoogovengas'
         ]
     elif selected_energy_source == 'Totaal aardoliegrondstoffen':
         energySelection = [
-            'Ruwe aardolie',
-            'Aardgascondensaat',
-            'Additieven',
-            'Overige aardoliegrondstoffen'
+            'Ruwe aardolie', 'Aardgascondensaat', 'Additieven', 'Overige aardoliegrondstoffen'
         ]
     elif selected_energy_source == 'Totaal aardolieproducten':
         energySelection = [
-            'Restgassen uit olie',
-            'Lpg',
-            'Nafta',
-            'Motorbenzine',
-            'Jetfuel op benzinebasis',
-            'Vliegtuigbenzine',
-            'Vliegtuigkerosine',
-            'Overige kerosine (petroleum)',
-            'Gas-, dieselolie en lichte stookolie',
-            'Zware stookolie',
-            'Terpentine en speciale benzine',
-            'Smeermiddelen',
-            'Bitumen',
-            'Minerale wassen',
-            'Petroleumcokes',
-            'Overige aardolieproducten'
+            'Restgassen uit olie', 'Lpg', 'Nafta', 'Motorbenzine', 'Jetfuel op benzinebasis',
+            'Vliegtuigbenzine', 'Vliegtuigkerosine', 'Overige kerosine (petroleum)',
+            'Gas-, dieselolie en lichte stookolie', 'Zware stookolie', 'Terpentine en speciale benzine',
+            'Smeermiddelen', 'Bitumen', 'Minerale wassen', 'Petroleumcokes', 'Overige aardolieproducten'
         ]
     elif selected_energy_source == 'Hernieuwbare energie':
         energySelection = [
-            'Waterkracht',
-            'Windenergie op land',
-            'Windenergie op zee',
-            'Zonnewarmte',
-            'Zonnestroom',
-            'Aardwarmte',
-            'Omgevingsenergie',
-            'Hernieuwbaar huishoudelijk afval',
-            'Vaste en vloeibare biomassa',
-            'Biogas'
+            'Waterkracht', 'Windenergie op land', 'Windenergie op zee', 'Zonnewarmte', 'Zonnestroom',
+            'Aardwarmte', 'Omgevingsenergie', 'Hernieuwbaar huishoudelijk afval', 
+            'Vaste en vloeibare biomassa', 'Biogas'
         ]
     else :
         energySelection = []
 
     ## Prepare DataFrame for the Detail energy conversion of year graph
-    energyConversionSelection = dfCbsEnergy[
-        dfCbsEnergy['Energiedragers'].isin(energySelection)
-    ]
-    energyConversionSelection = energyConversionSelection[
-        energyConversionSelection['Perioden']==str(selected_year) 
-    ]
-    energyConversionDf = energyConversionSelection.groupby(['Energiedragers']).sum()
-    energyConversionDf = energyConversionDf.sort_values(
-        by=['TotaalSaldoEnergieomzetting_16'], ascending=True
-    )
+    energyConvSel = dfCbsEnergy[dfCbsEnergy['Energiedragers'].isin(energySelection)]
+    energyConvSel = energyConvSel[energyConvSel['Perioden']==str(selected_year)]
+    energyConvDf = energyConvSel.groupby(['Energiedragers']).sum()
+    energyConvDf = energyConvDf.sort_values(by=['TotaalSaldoEnergieomzetting_16'], ascending=True)
+    
     ## Build the detail energy sources of year graph
     fig = go.Figure(data=[
-        go.Bar(
-            name="Totaal inzet",
-            x=energyConversionDf.index,
-            y=energyConversionDf['TotaalInzet_10']
+        go.Bar(name="Totaal inzet",
+            x=energyConvDf.index, y=energyConvDf['TotaalInzet_10']
         ),
-        go.Bar(
-            name="Totaal productie",
-            x=energyConversionDf.index,
-            y=energyConversionDf['TotaalProductie_13']
+        go.Bar(name="Totaal productie",
+            x=energyConvDf.index, y=energyConvDf['TotaalProductie_13']
         ),
-        go.Bar(
-            name="Totaal saldo energieomzetting",
-            x=energyConversionDf.index,
-            y=energyConversionDf['TotaalSaldoEnergieomzetting_16']
+        go.Bar(name="Totaal saldo energieomzetting",
+            x=energyConvDf.index, y=energyConvDf['TotaalSaldoEnergieomzetting_16']
         ),
     ])
+    
+    ## Update graph layout for correct visualisation
     fig.update_layout(
-        barmode='group',
-        height=600,
+        xaxis_title="Energiedragers",
+        yaxis_title="Omzetting in PJ",
+        barmode='group', height=600,
         legend=dict(
             orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
+            yanchor="bottom", y=1.02,
+            xanchor="right", x=1
         )
     )
 
