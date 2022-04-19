@@ -2,13 +2,14 @@
 from dash import dcc
 from dash import html
 import dash_bootstrap_components as dbc
-from dash import Input, Output, callback
+from dash import Input, Output, State, callback
 import plotly_express as px
 import plotly.graph_objects as go
 
 import sys
 sys.path.insert(0, '/cbsEnergie/Code/pages/')
-from energyAppGlobalData import dfCbsEnergy, totalEnergyCategories
+from energyAppGlobalData import dfCbsEnergy
+from energyAppGlobalData import totalEnergyCategoriesSplit as totalEnergyCategories
 
 ## Function for building a graph based on selected list of columns
 def buildSelectedItemsGraph(figure, df, selection):
@@ -25,44 +26,163 @@ def buildSelectedItemsGraph(figure, df, selection):
     
     return figure
 
+card = dbc.Card(
+    [
+        dbc.CardHeader([
+            html.H5("Uitleg bij deze grafiek:")
+        ]),
+        dbc.CardBody([
+            html.P(
+                "Verbruik wordt gemeten in petajoules (ookwel PJ)"
+            ),
+            html.P(
+                "Finaal gebruik is het verbruik van energie buiten de energiesector. "+
+                "Deze verbruikers kunnen worden gezien als de eindgebruikers van de energie."
+            )
+        ])
+    ],
+    className="m-4 pb-1", style={"maxHeight": "520px", "overflow": "scroll"}
+)
+
 ## Eigen verbruik layout
 layout = html.Div([
     dbc.Row(
         [
             dbc.Col(
                 [
-                    html.H3("Finaal verbruik over het jaar",
-                        className="text-center text-white"
-                    ),
                     dcc.Dropdown(id='energie-finaal-verbruik-jaar',
-                        options= list(dfCbsEnergy['Perioden'].unique()), value='2020',
-                        className="mb-4 mt-2"
+                        options= list(dfCbsEnergy['Perioden'].unique()),
+                        value='2020', className="mb-2 mt-2"
                     ),
-                    dcc.Graph(id='energie-finaal-verbruik-per-drager'),
-                ], xs=10, sm=10,md=10,lg=10,xl=10,xxl=10, className="offset-1 mb-2 mt-2"
+                ], xs=10, sm=10,md=10,lg=5,xl=5,xxl=5, className="offset-1 mt-2 pb-2 g-4"
             ),
             dbc.Col(
                 [
-                    html.H3("Detailoverzicht finaal verbruik over het jaar",
-                        className="text-center text-white"
-                    ),
                     dcc.Dropdown(id='energie-finaal-verbruik-verdieping-opties',
                         options = [
                             'Nijverheid exclusief de energiesector', 'Vervoer',
                             'Overige afnemers', 'Niet energetisch gebruik',
                         ],
-                        value='Nijverheid exclusief de energiesector',
-                        className="mb-4 mt-2"
+                        value='Nijverheid exclusief de energiesector', className="mb-2 mt-2"
                     ),
-                    dcc.Graph(id='energie-finaal-verbruik-verdieping',
-                        className="mb-3"
-                    )
-                ], xs=10, sm=10,md=10,lg=10,xl=10,xxl=10, className="offset-1 mb-5 mt-2"
+                ], xs=10, sm=10,md=10,lg=5,xl=5,xxl=5, className="mt-2 pb-2 g-4"
+            )
+        ], className="bg-light g-0"
+    ),
+
+    dbc.Row(
+        [
+            dbc.Button(
+                [
+                    dbc.Col(
+                        [
+                            html.H5(
+                                "Finaal verbruik over het jaar", className="text-center text-white"
+                            ),
+                        ],
+                        xs=10, sm=10,md=10,lg=10,xl=10,xxl=10,
+                        className="offset-1 g-0"
+                    ),
+                ],
+                id="collapse-total-energy-final-usage-year-button",
+                className="mg-0",
+                color="primary",
+                n_clicks=0,
             ),
-        ], 
-        className="mt-4 mb-2 bg-secondary"
+        ], className="bg-dark g-0"
+    ),
+    dbc.Collapse(
+        [
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            dcc.Graph(id='energie-finaal-verbruik-per-drager'),
+                        ],
+                        xs=12, sm=12,md=12,lg=9,xl=9,xxl=9,
+                        className="bg-dark pb-2 g-0"
+                    ),
+                    dbc.Col(
+                        [
+                            card
+                        ],
+                        xs= 12, sm= 12, md= 12, lg= 3, xl= 3, xxl= 3,
+                        className="mb-2 mt-2 pb-2",
+                    )
+                ], className="bg-dark g-0"
+            )
+        ],
+        id="total-energy-final-usage-year-collapse",
+        is_open=True
+    ),
+    
+    dbc.Row(
+        [
+            dbc.Button(
+                [
+                    dbc.Col(
+                        [
+                            html.H5(
+                                "Detailoverzicht finaal verbruik over het jaar",
+                                className="text-center text-white"
+                            ),
+                        ],
+                        xs=12, sm=12,md=12,lg=9,xl=9,xxl=9,
+                        className="offset-1 g-0"
+                    ),
+                ],
+                id="collapse-detail-energy-final-usage-year-button",
+                className="mg-0",
+                color="primary",
+                n_clicks=0,
+            ),
+        ], className="bg-dark g-0 mt-4"
+    ),
+    dbc.Collapse(
+        [
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            dcc.Graph(id='energie-finaal-verbruik-verdieping'),
+                        ],
+                        xs=12, sm=12,md=12,lg=9,xl=9,xxl=9,
+                        className="bg-dark pb-2 g-0"
+                    ),
+                    dbc.Col(
+                        [
+                            card
+                        ],
+                        xs= 12, sm= 12, md= 12, lg= 3, xl= 3, xxl= 3,
+                        className="mb-2 mt-2 pb-2",
+                    )
+                ], className="bg-dark g-0"
+            )
+        ],
+        id="detail-energy-final-usage-year-collapse",
+        is_open=False
     ),
 ])
+
+@callback(
+    Output("total-energy-final-usage-year-collapse", "is_open"),
+    [Input("collapse-total-energy-final-usage-year-button", "n_clicks")],
+    [State("total-energy-final-usage-year-collapse", "is_open")],
+)
+def toggle_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+@callback(
+    Output("detail-energy-final-usage-year-collapse", "is_open"),
+    [Input("collapse-detail-energy-final-usage-year-button", "n_clicks")],
+    [State("detail-energy-final-usage-year-collapse", "is_open")],
+)
+def toggle_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
 
 ## Callback "Finaal Verbruik totaal"
 @callback(
@@ -111,14 +231,17 @@ def update_graph(selected_year):
     fig.update_layout(
         xaxis_title="Energiedragers",
         yaxis_title="Verbruik in PJ",
-        barmode='group',
-        height=600,
+        barmode='group', height=600,
         legend=dict(
             orientation="h",
             yanchor="bottom", y=1.02,
-            xanchor="right", x=1
-        )
+            xanchor="left", x=0
+        ),
+        plot_bgcolor= 'rgba(192,192,192,0.75)',
+        paper_bgcolor= 'rgba(0,0,0,0)',
+        font= dict(color="white")
     )
+    fig.update_xaxes(tickangle=-45)
     return fig
 
 ## Callback "Finaal Verbruik Details"
@@ -194,13 +317,16 @@ def update_graph(selected_year, selected_option):
     fig.update_layout(
         xaxis_title="Energiedragers",
         yaxis_title="Verbruik in PJ",
-        barmode='group',
-        height=600,
+        barmode='group', height=600,
         legend=dict(
             orientation="h",
-            yanchor="bottom", y=1.02,
-            xanchor="right", x=1
-        )
+            yanchor="top", y=1.6,
+            xanchor="left", x=0
+        ),
+        plot_bgcolor= 'rgba(192,192,192,0.75)',
+        paper_bgcolor= 'rgba(0,0,0,0)',
+        font= dict(color="white")
     )
+    fig.update_xaxes(tickangle=-45)
 
     return fig
