@@ -12,51 +12,57 @@ from pages import page1, page2, page3, page4, page5, page6, page7
 app = dash.Dash(
     __name__,
     suppress_callback_exceptions=True,
-    external_stylesheets=[dbc.themes.SANDSTONE],
+    external_stylesheets=[dbc.themes.LUX],
     meta_tags=[{
-            "name": "viewport", "content": "width=device-width, initial-scale=1.0",
+        "name": "viewport", "content": "width=device-width, initial-scale=1.0",
     }]
 )
 
 ## App layout
 app.layout = html.Div([
-    dbc.Row(
-        [
-            dbc.Col(
-                [
-                    dbc.NavbarSimple(
-                        children=[
-                            dbc.DropdownMenu(
-                                children=[
-                                    dbc.DropdownMenuItem("Energieaanbod tijdlijn", href="/page1", className="text-black"),
-                                    dbc.DropdownMenuItem("Energieaanbod per jaar", href="/page2", className="text-black"),
-                                ],
-                                nav=True,
-                                in_navbar=True,
-                                label="Energieaanbod",
-                                toggleClassName="text-white"
-                            ),
-                            dbc.DropdownMenu(
-                                children=[
-                                    dbc.DropdownMenuItem("Totaal verbruik tijdlijn", href="/page3", className="text-black"),
-                                    dbc.DropdownMenuItem("Totaal verbruik per jaar", href="/page4", className="text-black"),
-                                    dbc.DropdownMenuItem("Energieomzetting per jaar", href="/page5", className="text-black pl-2"),
-                                    dbc.DropdownMenuItem("Eigen verbruik per jaar", href="/page6", className="text-black pl-2"),
-                                    dbc.DropdownMenuItem("Finaal verbruik per jaar", href="/page7", className="text-black pl-2"),
-                                ],
-                                nav=True,
-                                in_navbar=True,
-                                label="Energieverbruik",
-                                toggleClassName="text-white"
-                            ),
-                        ],
-                        brand="Dashboard energie in nederland", brand_href="/",
-                        brand_style={'color':'white'}, color="primary",
-                        className="text-center mt-2 mb-2 text-white",
-                    )
-                ], width=10, className="offset-1"
-            )
-        ], className="bg-primary"
+    dbc.NavbarSimple(
+        children=[
+            dbc.DropdownMenu(
+                children=[
+                    dbc.DropdownMenuItem("Energieaanbod tijdlijn",
+                        href="/page1", className="text-black"
+                    ),
+                    dbc.DropdownMenuItem("Energieaanbod per jaar",
+                        href="/page2", className="text-black"
+                    ),
+                ],
+                nav=True,
+                in_navbar=True,
+                label="Energieaanbod",
+                toggleClassName="text-white"
+            ),
+            dbc.DropdownMenu(
+                children=[
+                    dbc.DropdownMenuItem("Totaal verbruik tijdlijn",
+                        href="/page3", className="text-black"
+                    ),
+                    dbc.DropdownMenuItem("Totaal verbruik per jaar",
+                        href="/page4", className="text-black"
+                    ),
+                    dbc.DropdownMenuItem("Energieomzetting per jaar",
+                        href="/page5", className="text-black pl-2"
+                    ),
+                    dbc.DropdownMenuItem("Eigen verbruik per jaar",
+                        href="/page6", className="text-black pl-2"
+                    ),
+                    dbc.DropdownMenuItem("Finaal verbruik per jaar",
+                        href="/page7", className="text-black pl-2"
+                    ),
+                ],
+                    nav=True,
+                    in_navbar=True,
+                    label="Energieverbruik",
+                    toggleClassName="text-white"
+            ),
+        ],
+        brand="Dashboard energie in nederland", brand_href="/",
+        brand_style={'color':'white'}, color="primary",
+        className="text-center text-light",
     ),
     html.Div(
         [
