@@ -13,7 +13,18 @@ dfCbsEnergy = pandas.DataFrame(cbsodata.get_data('83140NED'))
 
 
 ##Set categories for totals
-totalEnergyCategories = [
+totalEnergyCategoriesWhole = [
+    'Totaal kool en koolproducten',
+    'Totaal aardoliegrondstoffen en producten',
+    'Aardgas',
+    'Hernieuwbare energie',
+    'Elektriciteit',
+    'Warmte',
+    'Kernenergie'
+]
+
+##Set categories for totals
+totalEnergyCategoriesSplit = [
     'Totaal kool en koolproducten',
     'Totaal aardoliegrondstoffen',
     'Totaal aardolieproducten',
@@ -23,3 +34,4 @@ totalEnergyCategories = [
     'Warmte',
     'Kernenergie'
 ]
+
